@@ -40,19 +40,21 @@ function TaskItem({ task }) {
           </p>
         </div>
         
-        <motion.button
-          className={`delete-btn p-2 rounded-full ${
-            task.isCompleted 
-              ? 'bg-rose-100 text-rose-600 hover:bg-rose-200' 
-              : 'bg-transparent text-neutral-400 hover:bg-neutral-100'
-          } transition-colors`}
-          onClick={() => deleteTask(task.id)}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          data-testid={`delete-task-${task.id}`}
-        >
-          <TrashIcon className="h-4 w-4" />
-        </motion.button>
+        {task.recurrence !== 'daily' && (
+          <motion.button
+            className={`delete-btn p-2 rounded-full ${
+              task.isCompleted 
+                ? 'bg-rose-100 text-rose-600 hover:bg-rose-200' 
+                : 'bg-transparent text-neutral-400 hover:bg-neutral-100'
+            } transition-colors`}
+            onClick={() => deleteTask(task.id)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            data-testid={`delete-task-${task.id}`}
+          >
+            <TrashIcon className="h-4 w-4" />
+          </motion.button>
+        )}
       </div>
       
       {/* Display tags if they exist */}

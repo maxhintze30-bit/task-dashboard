@@ -1,0 +1,20 @@
+[
+  {
+    "id": "daily-hof-hintze",
+    "title": "Software-Workflow Hof Hintze weiterführen",
+    "description": "Täglich am Software-Workflow für Hof Hintze weiterarbeiten",
+    "tags": ["Täglich", "Hof Hintze"]
+  },
+  {
+    "id": "daily-cs50x",
+    "title": "CS50x Kurs",
+    "description": "Täglich am CS50x Kurs weiterlernen",
+    "tags": ["Täglich", "CS50x"]
+  },
+  {
+    "id": "daily-python-30-days",
+    "title": "30 Days of Python Kurs",
+    "description": "Täglich die nächste Lektion im 30 Days of Python Kurs",
+    "tags": ["Täglich", "Python"]
+  }
+]
