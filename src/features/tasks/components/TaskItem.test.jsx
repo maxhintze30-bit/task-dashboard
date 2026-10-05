@@ -81,3 +81,12 @@ describe('TaskItem Component', () => {
     expect(screen.queryByTestId(`task-tags-${taskWithoutTags.id}`)).not.toBeInTheDocument();
   });
 });
+describe('TaskItem daily tasks', () => {
+  test('hides the delete button for daily tasks', () => {
+    const dailyTask = { id: 'daily-cs50x', title: 'CS50x Kurs', isCompleted: false, recurrence: 'daily', tags: ['Täglich'] };
+    render(<TaskItem task={dailyTask} />);
+
+    expect(screen.getByText('CS50x Kurs')).toBeInTheDocument();
+    expect(screen.queryByTestId('delete-task-daily-cs50x')).not.toBeInTheDocument();
+  });
+});

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { DataHydrationService } from '../common/utils/DataHydrationService';
+import { DailyTaskService, getDateKey } from '../common/utils/DailyTaskService';
 
 // Create the task context
 const TaskContext = createContext();
@@ -10,11 +11,13 @@ export const useTaskContext = () => useContext(TaskContext);
 // Task provider component
 export const TaskProvider = ({ children }) => {
   const [tasks, setTasks] = useState(() => {
-    // Initialize with hydrated data if should hydrate
-    return DataHydrationService.shouldHydrate() 
+    // Daily tasks are always present; sample data only if should hydrate
+    const hydratedTasks = DataHydrationService.shouldHydrate() 
       ? DataHydrationService.getInitialTasks() 
       : [];
+    return [...DailyTaskService.getDailyTasks(), ...hydratedTasks];
   });
+  const [dateKey, setDateKey] = useState(() => getDateKey());
   const [stats, setStats] = useState({ total: 0, completed: 0, remaining: 0 });
 
   useEffect(() => {
@@ -26,6 +29,25 @@ export const TaskProvider = ({ children }) => {
       remaining: tasks.length - completed
     });
   }, [tasks]);
+
+  useEffect(() => {
+    // Remember today's progress on daily tasks
+    DailyTaskService.saveCompletion(tasks);
+  }, [tasks]);
+
+  useEffect(() => {
+    // Reset daily tasks when the day changes while the app is open
+    const interval = setInterval(() => {
+      const today = getDateKey();
+      if (today !== dateKey) {
+        setDateKey(today);
+        setTasks(prevTasks => DailyTaskService.resetDailyTasks(prevTasks));
+      }
+    }, 60 * 1000);
+    return () => clearInterval(interval);
+  }, [dateKey]);
+
+  const isDaily = (task) => task.recurrence === 'daily';
 
   const addTask = (task) => {
     const id = Math.floor(Math.random() * 10000) + 1;
@@ -43,7 +65,8 @@ export const TaskProvider = ({ children }) => {
   };
 
   const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+    // Daily tasks can't be deleted, they come back every day
+    setTasks(tasks.filter((task) => task.id !== id || isDaily(task)));
   };
 
   const completeAllTasks = (taskIds = null) => {
@@ -61,10 +84,10 @@ export const TaskProvider = ({ children }) => {
   const deleteCompletedTasks = (taskIds = null) => {
     if (taskIds && taskIds.length > 0) {
       // Delete specific completed tasks (for task lists)
-      setTasks(tasks.filter(task => !taskIds.includes(task.id)));
+      setTasks(tasks.filter(task => !taskIds.includes(task.id) || isDaily(task)));
     } else {
       // Delete all completed tasks
-      setTasks(tasks.filter(task => !task.isCompleted));
+      setTasks(tasks.filter(task => !task.isCompleted || isDaily(task)));
     }
   };
 

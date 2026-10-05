@@ -4,6 +4,8 @@ import { DataHydrationService } from '../common/utils/DataHydrationService';
 // Create the list context
 const ListContext = createContext();
 
+const dailyList = { id: 'daily', title: 'Täglich', filters: [{ type: 'tag', value: 'Täglich' }] };
+
 // Custom hook for using list context
 export const useListContext = () => useContext(ListContext);
 
@@ -11,9 +13,10 @@ export const useListContext = () => useContext(ListContext);
 export const ListProvider = ({ children }) => {
   const [taskLists, setTaskLists] = useState(() => {
     // Initialize with hydrated data if should hydrate
-    return DataHydrationService.shouldHydrate() 
+    const lists = DataHydrationService.shouldHydrate() 
       ? DataHydrationService.getInitialTaskLists() 
       : [{ id: 'default', title: 'All Tasks', filters: [] }];
+    return [lists[0], dailyList, ...lists.slice(1)];
   });
 
   const addTaskList = () => {
