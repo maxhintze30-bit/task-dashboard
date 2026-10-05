@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useTaskContext } from './TaskContext';
 import { DataHydrationService } from '../common/utils/DataHydrationService';
+import { StorageService } from '../common/utils/StorageService';
 
 // Create the tag context
 const TagContext = createContext();
@@ -11,7 +12,9 @@ export const useTagContext = () => useContext(TagContext);
 // Tag provider component
 export const TagProvider = ({ children }) => {
   const [tags, setTags] = useState(() => {
-    // Initialize with hydrated data if should hydrate
+    // Initialize with saved tags, or hydrated data if should hydrate
+    const savedTags = StorageService.load('tags', null);
+    if (savedTags) return savedTags;
     return DataHydrationService.shouldHydrate() 
       ? DataHydrationService.getInitialTags() 
       : [];
@@ -36,6 +39,10 @@ export const TagProvider = ({ children }) => {
       return Array.from(allTags);
     });
   }, [tasks]);
+
+  useEffect(() => {
+    StorageService.save('tags', tags);
+  }, [tags]);
 
   const addTag = (tag) => {
     if (!tags.includes(tag)) {

@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { DataHydrationService } from '../common/utils/DataHydrationService';
 import { DailyTaskService, getDateKey } from '../common/utils/DailyTaskService';
+import { StorageService } from '../common/utils/StorageService';
 
 // Create the task context
 const TaskContext = createContext();
@@ -11,11 +12,14 @@ export const useTaskContext = () => useContext(TaskContext);
 // Task provider component
 export const TaskProvider = ({ children }) => {
   const [tasks, setTasks] = useState(() => {
-    // Daily tasks are always present; sample data only if should hydrate
-    const hydratedTasks = DataHydrationService.shouldHydrate() 
-      ? DataHydrationService.getInitialTasks() 
-      : [];
-    return [...DailyTaskService.getDailyTasks(), ...hydratedTasks];
+    // Daily tasks are always present; then saved tasks, or sample data if should hydrate
+    const savedTasks = StorageService.load('tasks', null);
+    const otherTasks = savedTasks
+      ? savedTasks.filter(task => task.recurrence !== 'daily')
+      : DataHydrationService.shouldHydrate() 
+        ? DataHydrationService.getInitialTasks() 
+        : [];
+    return [...DailyTaskService.getDailyTasks(), ...otherTasks];
   });
   const [dateKey, setDateKey] = useState(() => getDateKey());
   const [stats, setStats] = useState({ total: 0, completed: 0, remaining: 0 });
@@ -31,7 +35,8 @@ export const TaskProvider = ({ children }) => {
   }, [tasks]);
 
   useEffect(() => {
-    // Remember today's progress on daily tasks
+    // Remember tasks and today's progress on daily tasks
+    StorageService.save('tasks', tasks.filter(task => task.recurrence !== 'daily'));
     DailyTaskService.saveCompletion(tasks);
   }, [tasks]);
 
